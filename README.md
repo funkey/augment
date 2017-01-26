@@ -20,19 +20,19 @@ image[:10,:10,:10] = 1
 image[:,::10,:] = 1
 image[:,:,::10] = 1
 
-transformation = create_identity_transformation(image.shape)
+transformation = augment.create_identity_transformation(image.shape)
 
 # jitter in 3D
-transformation += create_elastic_transformation(
+transformation += augment.create_elastic_transformation(
         image.shape,
         num_control_points = [3,10,10],
         jitter_sigma = [0.3, 10, 10])
 
 # rotate around z axis
-transformation += create_rotation_transformation(
+transformation += augment.create_rotation_transformation(
         image.shape,
         math.pi/4)
 
 # apply transformation
-image = apply_transformation(image, transformation)
+image = augment.apply_transformation(image, transformation)
 ```
