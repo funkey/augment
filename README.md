@@ -11,6 +11,7 @@ A simple elastic augmentation for ND arrays.
 ```
 import augment
 import numpy as np
+import math
 
 # create some example data
 image = np.zeros((100,500,500), dtype=np.float)
