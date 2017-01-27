@@ -57,9 +57,12 @@ def create_rotation_transformation(shape, angle):
 
     return control_point_offsets_to_map(control_point_offsets, shape)
 
-def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sigma = 10.0):
+def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sigma = 10.0, subsample = 1):
 
     dims = len(shape)
+    subsample_shape = tuple(s/subsample for s in shape)
+
+    assert tuple(s*subsample for s in subsample_shape) == shape, "shape components %s must be multiples of subsample size %d"%(str(shape), subsample)
 
     try:
         spacing = tuple((d for d in control_point_spacing))
@@ -83,10 +86,13 @@ def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sig
     control_point_offsets = np.zeros((dims,) + control_points, dtype=np.float)
     for d in range(dims):
         if sigmas[d] > 0:
-            sigma = sigmas[d]
-            control_point_offsets[d] = np.random.normal(scale=sigma, size=control_points)
+            control_point_offsets[d] = np.random.normal(scale=sigmas[d], size=control_points)
 
-    return control_point_offsets_to_map(control_point_offsets, shape, interpolate_order=3)
+    offset_map = control_point_offsets_to_map(control_point_offsets, subsample_shape, interpolate_order=3)
+    if subsample > 1:
+        offset_map = control_point_offsets_to_map(offset_map, shape, interpolate_order=1)
+
+    return offset_map
 
 def apply_transformation(image, transformation, interpolate = True, outside_value = 0):
 
