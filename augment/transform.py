@@ -60,7 +60,7 @@ def create_rotation_transformation(shape, angle):
 def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sigma = 10.0, subsample = 1):
 
     dims = len(shape)
-    subsample_shape = tuple(s/subsample for s in shape)
+    subsample_shape = tuple(max(1,s/subsample) for s in shape)
 
     try:
         spacing = tuple((d for d in control_point_spacing))
