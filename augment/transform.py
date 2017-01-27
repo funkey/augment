@@ -2,7 +2,6 @@ import math
 import numpy as np
 import time
 from scipy.ndimage.interpolation import map_coordinates, zoom
-from scipy.ndimage.interpolation import geometric_transform
 
 def rotate(point, angle):
 
@@ -12,18 +11,27 @@ def rotate(point, angle):
 
     return res
 
+def scale(a, factors, order):
+    return zoom(a, zoom=factors, mode='nearest', order=order)
+
 def control_point_offsets_to_map(control_point_offsets, shape, interpolate_order=1):
 
-    print("Creating dense offset map...")
+    print("Upscaling control points")
+    print("\tfrom               : " + str(control_point_offsets[0].shape))
+    print("\tto                 : " + str(shape))
+    print("\tinterpolation order: " + str(interpolate_order))
 
     dims = len(shape)
 
     # upsample control points to shape of original image
-    offsets = np.zeros((dims,) + shape)
     control_point_zoom = tuple(float(s)/c for s,c in zip(shape, control_point_offsets.shape[1:]))
 
-    for d in range(dims):
-        offsets[d] = zoom(control_point_offsets[d], zoom=control_point_zoom, mode='nearest', order=interpolate_order)
+    start = time.time()
+    offsets = np.array([
+        scale(control_point_offsets[d], control_point_zoom, interpolate_order)
+        for d in range(dims)
+    ])
+    print("\tupsampled in " + str(time.time() - start) + "s")
 
     return offsets
 
