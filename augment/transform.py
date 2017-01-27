@@ -57,20 +57,23 @@ def create_rotation_transformation(shape, angle):
 
     return control_point_offsets_to_map(control_point_offsets, shape)
 
-def create_elastic_transformation(shape, num_control_points = 10, jitter_sigma = 1.0):
+def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sigma = 10.0):
 
     dims = len(shape)
 
     try:
-        control_points = tuple((d for d in num_control_points))
+        spacing = tuple((d for d in control_point_spacing))
     except:
-        control_points = (num_control_points,)*dims
+        spacing = (control_point_spacing,)*dims
     try:
         sigmas = [ s for s in jitter_sigma ]
     except:
         sigmas = [jitter_sigma]*dims
 
-    assert np.prod(control_points) > 0, "Number of control points is not allowed to be zero"
+    control_points = tuple(
+            max(1,int(round(float(shape[d])/spacing[d])))
+            for d in range(len(shape))
+    )
 
     print("Creating elastic transformation with:")
     print("\tcontrol points per axis: " + str(control_points))
