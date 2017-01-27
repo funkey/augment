@@ -62,8 +62,6 @@ def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sig
     dims = len(shape)
     subsample_shape = tuple(s/subsample for s in shape)
 
-    assert tuple(s*subsample for s in subsample_shape) == shape, "shape components %s must be multiples of subsample size %d"%(str(shape), subsample)
-
     try:
         spacing = tuple((d for d in control_point_spacing))
     except:
