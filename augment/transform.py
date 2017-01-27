@@ -96,4 +96,4 @@ def apply_transformation(image, transformation, interpolate = True, outside_valu
 
     print("Applying transformation...")
     order = 1 if interpolate == True else 0
-    return map_coordinates(image, transformation, order=order, mode='constant', cval=outside_value)
+    return map_coordinates(image, transformation, output=image.dtype, order=order, mode='constant', cval=outside_value)
