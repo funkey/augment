@@ -37,8 +37,8 @@ def control_point_offsets_to_map(control_point_offsets, shape, interpolate_order
 
 def create_identity_transformation(shape):
 
-    axis_ranges = (np.arange(d, dtype=np.float) for d in shape)
-    return np.meshgrid(*axis_ranges, indexing='ij')
+    axis_ranges = (np.arange(d, dtype=np.float32) for d in shape)
+    return np.array(np.meshgrid(*axis_ranges, indexing='ij'), dtype=np.float32)
 
 def create_rotation_transformation(shape, angle):
 
@@ -54,7 +54,7 @@ def create_rotation_transformation(shape, angle):
     # rotate control points
     center = np.array([0.5*(d-1) for d in shape])
 
-    control_point_offsets = np.zeros((dims,) + control_points, dtype=np.float)
+    control_point_offsets = np.zeros((dims,) + control_points, dtype=np.float32)
     for control_point in np.ndindex(control_points):
 
         point = np.array(control_point)*control_point_scaling_factor
@@ -89,7 +89,7 @@ def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sig
     print("\taxis jitter sigmas     : " + str(sigmas))
 
     # jitter control points
-    control_point_offsets = np.zeros((dims,) + control_points, dtype=np.float)
+    control_point_offsets = np.zeros((dims,) + control_points, dtype=np.float32)
     for d in range(dims):
         if sigmas[d] > 0:
             control_point_offsets[d] = np.random.normal(scale=sigmas[d], size=control_points)
