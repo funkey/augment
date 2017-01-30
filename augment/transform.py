@@ -102,8 +102,9 @@ def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sig
 
     return upscale_transformation(control_point_offsets, subsample_shape, interpolate_order=3)
 
-def apply_transformation(image, transformation, interpolate = True, outside_value = 0):
+def apply_transformation(image, transformation, interpolate = True, outside_value = 0, output = None):
 
     print("Applying transformation...")
     order = 1 if interpolate == True else 0
-    return map_coordinates(image, transformation, output=image.dtype, order=order, mode='constant', cval=outside_value)
+    output = image.dtype if output is None else output
+    return map_coordinates(image, transformation, output=output, order=order, mode='constant', cval=outside_value)
