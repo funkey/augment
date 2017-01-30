@@ -11,41 +11,42 @@ def rotate(point, angle):
 
     return res
 
-def scale(a, factors, order):
-    return zoom(a, zoom=factors, mode='nearest', order=order)
+def upscale_transformation(transformation, output_shape, interpolate_order=1):
 
-def control_point_offsets_to_map(control_point_offsets, shape, interpolate_order=1):
+    input_shape = transformation.shape[1:]
 
     print("Upscaling control points")
-    print("\tfrom               : " + str(control_point_offsets[0].shape))
-    print("\tto                 : " + str(shape))
+    print("\tfrom               : " + str(input_shape))
+    print("\tto                 : " + str(output_shape))
     print("\tinterpolation order: " + str(interpolate_order))
 
-    dims = len(shape)
-
-    # upsample control points to shape of original image
-    control_point_zoom = tuple(float(s)/c for s,c in zip(shape, control_point_offsets.shape[1:]))
+    dims = len(output_shape)
+    scale = tuple(float(s)/c for s,c in zip(output_shape, input_shape))
 
     start = time.time()
-    offsets = np.array([
-        scale(control_point_offsets[d], control_point_zoom, interpolate_order)
-        for d in range(dims)
-    ])
+    scaled = np.zeros((dims,)+output_shape, dtype=np.float32)
+    for d in range(dims):
+        zoom(transformation[d], zoom=scale, output=scaled[d], order=interpolate_order)
     print("\tupsampled in " + str(time.time() - start) + "s")
 
-    return offsets
+    return scaled
 
-def create_identity_transformation(shape):
-
-    axis_ranges = (np.arange(d, dtype=np.float32) for d in shape)
-    return np.array(np.meshgrid(*axis_ranges, indexing='ij'), dtype=np.float32)
-
-def create_rotation_transformation(shape, angle):
-
-    print("Creating rotation transformation with:")
-    print("\tangle: " + str(angle))
+def create_identity_transformation(shape, subsample=1):
 
     dims = len(shape)
+    subsample_shape = tuple(max(1,s/subsample) for s in shape)
+    step_width = tuple(float(shape[d]-1)/(subsample_shape[d]-1) for d in range(dims))
+
+    axis_ranges = (
+            np.arange(subsample_shape[d], dtype=np.float32)*step_width[d]
+            for d in range(dims)
+    )
+    return np.array(np.meshgrid(*axis_ranges, indexing='ij'), dtype=np.float32)
+
+def create_rotation_transformation(shape, angle, subsample=1):
+
+    dims = len(shape)
+    subsample_shape = tuple(max(1,s/subsample) for s in shape)
     control_points = (2,)*dims
 
     # map control points to world coordinates
@@ -53,6 +54,10 @@ def create_rotation_transformation(shape, angle):
 
     # rotate control points
     center = np.array([0.5*(d-1) for d in shape])
+
+    print("Creating rotation transformation with:")
+    print("\tangle : " + str(angle))
+    print("\tcenter: " + str(center))
 
     control_point_offsets = np.zeros((dims,) + control_points, dtype=np.float32)
     for control_point in np.ndindex(control_points):
@@ -63,7 +68,7 @@ def create_rotation_transformation(shape, angle):
         displacement = rotated_offset - center_offset
         control_point_offsets[(slice(None),) + control_point] += displacement
 
-    return control_point_offsets_to_map(control_point_offsets, shape)
+    return upscale_transformation(control_point_offsets, subsample_shape)
 
 def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sigma = 10.0, subsample = 1):
 
@@ -94,11 +99,7 @@ def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sig
         if sigmas[d] > 0:
             control_point_offsets[d] = np.random.normal(scale=sigmas[d], size=control_points)
 
-    offset_map = control_point_offsets_to_map(control_point_offsets, subsample_shape, interpolate_order=3)
-    if subsample > 1:
-        offset_map = control_point_offsets_to_map(offset_map, shape, interpolate_order=1)
-
-    return offset_map
+    return upscale_transformation(control_point_offsets, subsample_shape, interpolate_order=3)
 
 def apply_transformation(image, transformation, interpolate = True, outside_value = 0):
 
