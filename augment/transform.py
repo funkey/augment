@@ -6,8 +6,8 @@ from scipy.ndimage.interpolation import map_coordinates, zoom
 def rotate(point, angle):
 
     res = np.array(point)
-    res[1] =  math.sin(angle)*point[2] + math.cos(angle)*point[1]
-    res[2] = -math.sin(angle)*point[1] + math.cos(angle)*point[2]
+    res[0] =  math.sin(angle)*point[1] + math.cos(angle)*point[0]
+    res[1] = -math.sin(angle)*point[0] + math.cos(angle)*point[1]
 
     return res
 
@@ -63,8 +63,9 @@ def create_rotation_transformation(shape, angle, subsample=1):
     for control_point in np.ndindex(control_points):
 
         point = np.array(control_point)*control_point_scaling_factor
-        center_offset = np.array([p-c for c,p in zip(center, point)])
-        rotated_offset = rotate(center_offset, angle)
+        center_offset = np.array([p-c for c,p in zip(center, point)], dtype=np.float32)
+        rotated_offset = np.array(center_offset)
+        rotated_offset[-2:] = rotate(center_offset[-2:], angle)
         displacement = rotated_offset - center_offset
         control_point_offsets[(slice(None),) + control_point] += displacement
 
