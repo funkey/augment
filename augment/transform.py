@@ -15,10 +15,10 @@ def upscale_transformation(transformation, output_shape, interpolate_order=1):
 
     input_shape = transformation.shape[1:]
 
-    print("Upscaling control points")
-    print("\tfrom               : " + str(input_shape))
-    print("\tto                 : " + str(output_shape))
-    print("\tinterpolation order: " + str(interpolate_order))
+    # print("Upscaling control points")
+    # print("\tfrom               : " + str(input_shape))
+    # print("\tto                 : " + str(output_shape))
+    # print("\tinterpolation order: " + str(interpolate_order))
 
     dims = len(output_shape)
     scale = tuple(float(s)/c for s,c in zip(output_shape, input_shape))
@@ -27,7 +27,7 @@ def upscale_transformation(transformation, output_shape, interpolate_order=1):
     scaled = np.zeros((dims,)+output_shape, dtype=np.float32)
     for d in range(dims):
         zoom(transformation[d], zoom=scale, output=scaled[d], order=interpolate_order)
-    print("\tupsampled in " + str(time.time() - start) + "s")
+    # print("\tupsampled in " + str(time.time() - start) + "s")
 
     return scaled
 
@@ -55,9 +55,9 @@ def create_rotation_transformation(shape, angle, subsample=1):
     # rotate control points
     center = np.array([0.5*(d-1) for d in shape])
 
-    print("Creating rotation transformation with:")
-    print("\tangle : " + str(angle))
-    print("\tcenter: " + str(center))
+    # print("Creating rotation transformation with:")
+    # print("\tangle : " + str(angle))
+    # print("\tcenter: " + str(center))
 
     control_point_offsets = np.zeros((dims,) + control_points, dtype=np.float32)
     for control_point in np.ndindex(control_points):
@@ -90,9 +90,9 @@ def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sig
             for d in range(len(shape))
     )
 
-    print("Creating elastic transformation with:")
-    print("\tcontrol points per axis: " + str(control_points))
-    print("\taxis jitter sigmas     : " + str(sigmas))
+    # print("Creating elastic transformation with:")
+    # print("\tcontrol points per axis: " + str(control_points))
+    # print("\taxis jitter sigmas     : " + str(sigmas))
 
     # jitter control points
     control_point_offsets = np.zeros((dims,) + control_points, dtype=np.float32)
@@ -104,7 +104,7 @@ def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sig
 
 def apply_transformation(image, transformation, interpolate = True, outside_value = 0, output = None):
 
-    print("Applying transformation...")
+    # print("Applying transformation...")
     order = 1 if interpolate == True else 0
     output = image.dtype if output is None else output
     return map_coordinates(image, transformation, output=output, order=order, mode='constant', cval=outside_value)
