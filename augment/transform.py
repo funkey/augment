@@ -34,7 +34,7 @@ def upscale_transformation(transformation, output_shape, interpolate_order=1):
 def create_identity_transformation(shape, subsample=1):
 
     dims = len(shape)
-    subsample_shape = tuple(max(1,s/subsample) for s in shape)
+    subsample_shape = tuple(max(1,int(s/subsample)) for s in shape)
     step_width = tuple(float(shape[d]-1)/(subsample_shape[d]-1) for d in range(dims))
 
     axis_ranges = (
@@ -46,7 +46,7 @@ def create_identity_transformation(shape, subsample=1):
 def create_rotation_transformation(shape, angle, subsample=1):
 
     dims = len(shape)
-    subsample_shape = tuple(max(1,s/subsample) for s in shape)
+    subsample_shape = tuple(max(1,int(s/subsample)) for s in shape)
     control_points = (2,)*dims
 
     # map control points to world coordinates
@@ -74,7 +74,7 @@ def create_rotation_transformation(shape, angle, subsample=1):
 def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sigma = 10.0, subsample = 1):
 
     dims = len(shape)
-    subsample_shape = tuple(max(1,s/subsample) for s in shape)
+    subsample_shape = tuple(max(1,int(s/subsample)) for s in shape)
 
     try:
         spacing = tuple((d for d in control_point_spacing))
