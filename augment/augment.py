@@ -1,6 +1,6 @@
 import time
 import numpy as np
-from transform import create_identity_transformation, create_elastic_transformation, create_rotation_transformation, upscale_transformation, apply_transformation
+from .transform import create_identity_transformation, create_elastic_transformation, create_rotation_transformation, upscale_transformation, apply_transformation
 
 def create_transformation(shape, control_point_spacing, jitter_sigma, subsample, angle):
 
