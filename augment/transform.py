@@ -35,7 +35,7 @@ def create_identity_transformation(shape, subsample=1):
 
     dims = len(shape)
     subsample_shape = tuple(max(1,int(s/subsample)) for s in shape)
-    step_width = tuple(float(shape[d]-1)/(subsample_shape[d]-1) for d in range(dims))
+    step_width = tuple(float(shape[d]-1)/(subsample_shape[d]-1) if subsample_shape[d] > 1 else 1 for d in range(dims))
 
     axis_ranges = (
             np.arange(subsample_shape[d], dtype=np.float32)*step_width[d]
