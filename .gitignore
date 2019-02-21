@@ -2,4 +2,4 @@
 *.pyc
 build
 dist
-augment.egg-info
+augment_nd.egg-info
