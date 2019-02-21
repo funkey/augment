@@ -4,7 +4,7 @@ A simple elastic augmentation for ND arrays.
 
 # Installation
 
-`python setup.py install`
+`pip install augment-nd`
 
 # Usage
 
