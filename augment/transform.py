@@ -71,7 +71,9 @@ def create_rotation_transformation(shape, angle, subsample=1):
 
     return upscale_transformation(control_point_offsets, subsample_shape)
 
-def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sigma = 10.0, subsample = 1):
+def create_elastic_transformation(shape, control_point_spacing = 100, jitter_sigma = 10.0, subsample = 1, seed = None):
+    if seed is not None:
+        np.random.seed(seed)
 
     dims = len(shape)
     subsample_shape = tuple(max(1,int(s/subsample)) for s in shape)
