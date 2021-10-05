@@ -31,7 +31,7 @@ def upscale_transformation(transformation, output_shape, interpolate_order=1):
 
     return scaled
 
-def create_identity_transformation(shape, subsample=1):
+def create_identity_transformation(shape, subsample=1, scale=1.0):
 
     dims = len(shape)
     subsample_shape = tuple(max(1,int(s/subsample)) for s in shape)
@@ -41,7 +41,20 @@ def create_identity_transformation(shape, subsample=1):
             np.arange(subsample_shape[d], dtype=np.float32)*step_width[d]
             for d in range(dims)
     )
-    return np.array(np.meshgrid(*axis_ranges, indexing='ij'), dtype=np.float32)
+    transformation = np.array(np.meshgrid(*axis_ranges, indexing='ij'), dtype=np.float32)
+
+    if scale != 1.0:
+
+        center = (...,) + tuple(transformation.shape[d + 1]//2 for d in range(dims))
+        center_value = np.array(transformation[center])
+
+        for d in range(dims):
+            transformation[d] -= center_value[d]
+        transformation /= scale
+        for d in range(dims):
+            transformation[d] += center_value[d]
+
+    return transformation
 
 def create_rotation_transformation(shape, angle, subsample=1):
 
