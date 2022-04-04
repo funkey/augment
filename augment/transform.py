@@ -56,7 +56,12 @@ def create_identity_transformation(shape, subsample=1, scale=1.0):
 
     return transformation
 
-def create_rotation_transformation(shape, angle, subsample=1):
+def create_rotation_transformation(shape, angle, subsample=1, axes=None):
+    if axes is None:
+        axes = np.array((False,)*(len(shape)-2) + (True,)*2)
+    else:
+        axes = np.array(axes, dtype=bool)
+
 
     dims = len(shape)
     subsample_shape = tuple(max(1,int(s/subsample)) for s in shape)
@@ -78,7 +83,7 @@ def create_rotation_transformation(shape, angle, subsample=1):
         point = np.array(control_point)*control_point_scaling_factor
         center_offset = np.array([p-c for c,p in zip(center, point)], dtype=np.float32)
         rotated_offset = np.array(center_offset)
-        rotated_offset[-2:] = rotate(center_offset[-2:], angle)
+        rotated_offset[axes] = rotate(center_offset[axes], angle)
         displacement = rotated_offset - center_offset
         control_point_offsets[(slice(None),) + control_point] += displacement
 
