@@ -56,7 +56,12 @@ def create_identity_transformation(shape, subsample=1, scale=1.0):
 
     return transformation
 
-def create_rotation_transformation(shape, angle, subsample=1):
+def create_rotation_transformation(shape, angle, subsample=1, axes=None):
+    if axes is None:
+        axes = np.array((False,)*(len(shape)-2) + (True,)*2)
+    else:
+        axes = np.array(axes, dtype=bool)
+
 
     dims = len(shape)
     subsample_shape = tuple(max(1,int(s/subsample)) for s in shape)
@@ -78,7 +83,46 @@ def create_rotation_transformation(shape, angle, subsample=1):
         point = np.array(control_point)*control_point_scaling_factor
         center_offset = np.array([p-c for c,p in zip(center, point)], dtype=np.float32)
         rotated_offset = np.array(center_offset)
-        rotated_offset[-2:] = rotate(center_offset[-2:], angle)
+        rotated_offset[axes] = rotate(center_offset[axes], angle)
+        displacement = rotated_offset - center_offset
+        control_point_offsets[(slice(None),) + control_point] += displacement
+
+    return upscale_transformation(control_point_offsets, subsample_shape)
+    
+def create_3D_rotation_transformation(shape, rotation, subsample=1, axes=None):
+    """
+    rotation: `Scipy.spatial.transform.Rotation` instance
+    axes: boolean array-like with length equal to shape. Must sum to 3.
+        By default uses the last 3 dimensions.
+    """
+    if axes is None:
+        axes = np.array((False,)*(len(shape)-3) + (True,)*3)
+    else:
+        axes = np.array(axes, dtype=bool)
+        assert axes.sum() == 3, f"Cannot perform 3D rotation on {axes.sum()} axes"
+
+
+    dims = len(shape)
+    subsample_shape = tuple(max(1,int(s/subsample)) for s in shape)
+    control_points = (2,)*dims
+
+    # map control points to world coordinates
+    control_point_scaling_factor = tuple(float(s-1) for s in shape)
+
+    # rotate control points
+    center = np.array([0.5*(d-1) for d in shape])
+
+    # print("Creating rotation transformation with:")
+    # print("\tangle : " + str(angle))
+    # print("\tcenter: " + str(center))
+
+    control_point_offsets = np.zeros((dims,) + control_points, dtype=np.float32)
+    for control_point in np.ndindex(control_points):
+
+        point = np.array(control_point)*control_point_scaling_factor
+        center_offset = np.array([p-c for c,p in zip(center, point)], dtype=np.float32)
+        rotated_offset = np.array(center_offset)
+        rotated_offset[axes] = rotation.apply(center_offset[axes])
         displacement = rotated_offset - center_offset
         control_point_offsets[(slice(None),) + control_point] += displacement
 
